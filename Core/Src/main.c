@@ -95,7 +95,7 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
   Pulsador blanco, azul;
-
+  uint8_t contador=0;
   ANTIRREBOTE_iniciar(&blanco, GPIOA, GPIO_PIN_3, PULLUP);
   ANTIRREBOTE_iniciar(&azul, GPIOA, GPIO_PIN_5, PULLUP);
   /* USER CODE END 2 */
@@ -111,7 +111,7 @@ int main(void)
 	  if (flag_pin3 == 1){
 	            switch(antirrebote(&blanco)) {
 	                case ESTADO_PRESIONADO:
-	                    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1);
+	                    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); contador++;
 	                    break;
 	                case ESTADO_REPOSO:
 	                    flag_pin3 = 0;
@@ -124,7 +124,7 @@ int main(void)
 	        if (flag_pin5 == 1){
 	            switch(antirrebote(&azul)) {
 	                case ESTADO_PRESIONADO:
-	                    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2);
+	                    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2); contador++;
 	                    break;
 	                case ESTADO_REPOSO:
 	                    flag_pin5 = 0;

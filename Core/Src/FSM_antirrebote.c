@@ -2,10 +2,22 @@
 #include "main.h"
 #include "FSM_antirrebote.h"
 
-#define TIEMPO_VALIDACION 50
+#define TIEMPO_VALIDACION 20
 
 Estado_pulsador antirrebote(Pulsador *p){
-    if (HAL_GetTick() - p->ultimo_tick < 1) return p->estado;
+    if (HAL_GetTick() - p->ultimo_tick < 1) {
+        // Actualizar el estado interno de la FSM para evitar que quede varada
+        if (p->estado == ESTADO_PRESIONADO) {
+            p->estado = ESTADO_MANTENIDO;
+            return ESTADO_MANTENIDO;
+        }
+        if (p->estado == ESTADO_LIBERADO) {
+            p->estado = ESTADO_REPOSO;
+            return ESTADO_REPOSO;
+        }
+        return p->estado;
+    }
+
     p->ultimo_tick = HAL_GetTick();
 
     p->estado_pin = HAL_GPIO_ReadPin(p->port, p->PIN);
@@ -15,7 +27,9 @@ Estado_pulsador antirrebote(Pulsador *p){
     else if (p->estado_pin == GPIO_PIN_RESET){
         p->boton = 0;
     }
+
     if (p->pull == PULLUP) p->boton = !p->boton;
+
     p->estado = ANTIRREBOTE_evento(p);
     return p->estado;
 }
@@ -26,47 +40,52 @@ Estado_pulsador ANTIRREBOTE_evento(Pulsador *p) {
         case ESTADO_REPOSO:
             if (p->boton == 1) {
                 siguiente = ESTADO_VAL_PRESION;
+                p->t = 0; // Inicia el temporizador
             }
             break;
+
         case ESTADO_VAL_PRESION:
-            if (p->boton == 0) {
-                siguiente = ESTADO_REPOSO;
-            } else if (p->t >= TIEMPO_VALIDACION && p->boton == 1) {
-                siguiente = ESTADO_PRESIONADO;
-            } else if (p->t < TIEMPO_VALIDACION && p->boton == 1) {
-                p->t++;
+            p->t++;
+            if (p->t >= TIEMPO_VALIDACION) {
+                // Se evalúa el pin exclusivamente al terminar el tiempo de enmascaramiento
+                if (p->boton == 1) {
+                    siguiente = ESTADO_PRESIONADO;
+                } else {
+                    siguiente = ESTADO_REPOSO; // Falso disparo o ruido espurio
+                }
             }
             break;
+
         case ESTADO_PRESIONADO:
-            // Estado transitorio de 1 ciclo. Evoluciona de forma automática.
             siguiente = ESTADO_MANTENIDO;
             break;
+
         case ESTADO_MANTENIDO:
             if (p->boton == 0) {
                 siguiente = ESTADO_VAL_LIBERACION;
+                p->t = 0;
             }
             break;
+
         case ESTADO_VAL_LIBERACION:
-            if (p->boton == 1) {
-                siguiente = ESTADO_MANTENIDO;
-            } else if (p->t >= TIEMPO_VALIDACION && p->boton == 0) {
-                siguiente = ESTADO_LIBERADO;
-            } else if (p->t < TIEMPO_VALIDACION && p->boton == 0) {
-                p->t++;
+            p->t++;
+            if (p->t >= TIEMPO_VALIDACION) {
+                if (p->boton == 0) {
+                    siguiente = ESTADO_LIBERADO;
+                } else {
+                    siguiente = ESTADO_MANTENIDO; // Fue un rebote mientras se mantenía presionado
+                }
             }
             break;
+
         case ESTADO_LIBERADO:
-            // Estado transitorio de 1 ciclo. Evoluciona de forma automática.
             siguiente = ESTADO_REPOSO;
             break;
+
         default:
             break;
     }
 
-    // Simplificación: si hay cualquier cambio de estado, el temporizador se reinicia.
-    if (siguiente != p->estado) {
-        p->t = 0;
-    }
     return siguiente;
 }
 
