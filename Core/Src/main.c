@@ -63,7 +63,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		flag_pin3 = 1;
 	}
 	if (GPIO_Pin == GPIO_PIN_5){
-		flag_pin3 = 5;
+		flag_pin5 = 5;
 	}
 }
 /* USER CODE END 0 */
@@ -114,7 +114,7 @@ int main(void)
 
 		  if (flag_pin3 == 1){
 				switch(antirrebote(&blanco)) {
-					case ESTADO_PRESIONADO:  { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3); } break;
+					case ESTADO_PRESIONADO:  { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_1); } break;
 					case ESTADO_REPOSO:      flag_pin3 = 0; break;
 					default: break;
 				}
@@ -122,7 +122,7 @@ int main(void)
 
 		  if (flag_pin5 == 1){
 				switch(antirrebote(&azul)) {
-					case ESTADO_PRESIONADO:  { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5); } break;
+					case ESTADO_PRESIONADO:  { HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_2); } break;
 					case ESTADO_REPOSO:      flag_pin5 = 0; break;
 					default: break;
 				}
