@@ -24,65 +24,46 @@ Estado_pulsador ANTIRREBOTE_evento(Pulsador *p) {
         case ESTADO_REPOSO:
             if (p->boton == 1) {
                 siguiente = ESTADO_VAL_PRESION;
-                break;
             }
             break;
         case ESTADO_VAL_PRESION:
             if (p->boton == 0) {
                 siguiente = ESTADO_REPOSO;
-                break;
-            }
-            if (p->t >= 5 && p->boton == 1) {
+            } else if (p->t >= 5 && p->boton == 1) {
                 siguiente = ESTADO_PRESIONADO;
-                break;
+            } else if (p->t < 5 && p->boton == 1) {
+                p->t++;
             }
-            if (p->t < 5 && p->boton == 1) {
-                p->t = p->t + 1;
-                siguiente = ESTADO_VAL_PRESION;
-                break;
+            break;
+        case ESTADO_PRESIONADO:
+            // Estado transitorio de 1 ciclo. Evoluciona de forma automática.
+            siguiente = ESTADO_MANTENIDO;
+            break;
+        case ESTADO_MANTENIDO:
+            if (p->boton == 0) {
+                siguiente = ESTADO_VAL_LIBERACION;
             }
             break;
         case ESTADO_VAL_LIBERACION:
             if (p->boton == 1) {
-                siguiente = ESTADO_PRESIONADO;
-                break;
-            }
-            if (p->t >= 5 && p->boton == 0) {
-                siguiente = ESTADO_REPOSO;
-                break;
-            }
-            if (p->t < 5 && p->boton == 0) {
-                p->t = p->t + 1;
-                siguiente = ESTADO_VAL_LIBERACION;
-                break;
+                siguiente = ESTADO_MANTENIDO;
+            } else if (p->t >= 5 && p->boton == 0) {
+                siguiente = ESTADO_LIBERADO;
+            } else if (p->t < 5 && p->boton == 0) {
+                p->t++;
             }
             break;
-        case ESTADO_PRESIONADO:
-            if (p->boton == 0) {
-                siguiente = ESTADO_VAL_LIBERACION;
-                break;
-            }
+        case ESTADO_LIBERADO:
+            // Estado transitorio de 1 ciclo. Evoluciona de forma automática.
+            siguiente = ESTADO_REPOSO;
             break;
         default:
             break;
     }
+
+    // Simplificación: si hay cualquier cambio de estado, el temporizador se reinicia.
     if (siguiente != p->estado) {
-        switch (siguiente) {
-            case ESTADO_REPOSO:
-                p->t = 0;
-                break;
-            case ESTADO_VAL_PRESION:
-                p->t = 0;
-                break;
-            case ESTADO_VAL_LIBERACION:
-                p->t = 0;
-                break;
-            case ESTADO_PRESIONADO:
-                p->t = 0;
-                break;
-            default:
-                break;
-        }
+        p->t = 0;
     }
     return siguiente;
 }

@@ -19,8 +19,10 @@ typedef enum {
 typedef enum {
     ESTADO_REPOSO         = 0,
     ESTADO_VAL_PRESION    = 1,
-    ESTADO_PRESIONADO     = 2,
-    ESTADO_VAL_LIBERACION = 3
+    ESTADO_PRESIONADO     = 2,  // Evento transitorio: equivale a flanco de bajada validado
+    ESTADO_MANTENIDO      = 3,  // Estado estable: botón mantenido (nivel)
+    ESTADO_VAL_LIBERACION = 4,
+    ESTADO_LIBERADO       = 5   // Evento transitorio: equivale a flanco de subida validado
 } Estado_pulsador;
 
 typedef struct {
@@ -30,6 +32,7 @@ typedef struct {
     uint8_t         boton;
     uint8_t         t;
     Estado_pulsador estado;
+    Estado_pulsador estado_anterior; // <-- Nuevo campo
     Tipo_pull       pull;
     uint32_t        ultimo_tick;
 } Pulsador;
