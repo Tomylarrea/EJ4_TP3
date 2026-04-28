@@ -2,6 +2,8 @@
 #include "main.h"
 #include "FSM_antirrebote.h"
 
+#define TIEMPO_VALIDACION 50
+
 Estado_pulsador antirrebote(Pulsador *p){
     if (HAL_GetTick() - p->ultimo_tick < 1) return p->estado;
     p->ultimo_tick = HAL_GetTick();
@@ -29,9 +31,9 @@ Estado_pulsador ANTIRREBOTE_evento(Pulsador *p) {
         case ESTADO_VAL_PRESION:
             if (p->boton == 0) {
                 siguiente = ESTADO_REPOSO;
-            } else if (p->t >= 5 && p->boton == 1) {
+            } else if (p->t >= TIEMPO_VALIDACION && p->boton == 1) {
                 siguiente = ESTADO_PRESIONADO;
-            } else if (p->t < 5 && p->boton == 1) {
+            } else if (p->t < TIEMPO_VALIDACION && p->boton == 1) {
                 p->t++;
             }
             break;
@@ -47,9 +49,9 @@ Estado_pulsador ANTIRREBOTE_evento(Pulsador *p) {
         case ESTADO_VAL_LIBERACION:
             if (p->boton == 1) {
                 siguiente = ESTADO_MANTENIDO;
-            } else if (p->t >= 5 && p->boton == 0) {
+            } else if (p->t >= TIEMPO_VALIDACION && p->boton == 0) {
                 siguiente = ESTADO_LIBERADO;
-            } else if (p->t < 5 && p->boton == 0) {
+            } else if (p->t < TIEMPO_VALIDACION && p->boton == 0) {
                 p->t++;
             }
             break;

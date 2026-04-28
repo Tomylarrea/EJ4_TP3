@@ -37,6 +37,8 @@ typedef struct {
     uint32_t        ultimo_tick;
 } Pulsador;
 
+
+
 Estado_pulsador antirrebote(Pulsador *p);
 Estado_pulsador ANTIRREBOTE_evento(Pulsador *p);
 void ANTIRREBOTE_iniciar(Pulsador *p, GPIO_TypeDef *port, uint16_t PIN, Tipo_pull pull);
